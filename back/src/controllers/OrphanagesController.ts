@@ -36,13 +36,13 @@ export default {
             about,
             instructions,
             opening_hours,
-            open_on_weekends
+            open_on_weekends,
         } = request.body;
     
         const orphanagesRepository = getRepository(Orphanage);
         
         const requestImages = request.files as Express.Multer.File[];
-        const images = requestImages.map(image => {
+        const images = requestImages?.map(image => {
             return { path: image.filename }
         })
 
@@ -53,14 +53,14 @@ export default {
             about,
             instructions,
             opening_hours,
-            open_on_weekends,
+            open_on_weekends: open_on_weekends === 'true',
             images
         };
 
         const schema = Yup.object().shape({
             name: Yup.string().required(),
             latitude: Yup.number().required(),
-            longitutde: Yup.number().required(),
+            longitude: Yup.number().required(),
             about: Yup.string().required().max(300),
             instructions: Yup.string().required(),
             opening_hours: Yup.string().required(),
@@ -74,12 +74,11 @@ export default {
 
         await schema.validate(data, {
             abortEarly: false,
-        })
+        });
         
         const orphanage = orphanagesRepository.create(data);
     
         await orphanagesRepository.save(orphanage);
-    
     
         return response.status(201).json(orphanage);
     }
